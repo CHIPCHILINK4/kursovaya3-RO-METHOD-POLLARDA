@@ -596,7 +596,7 @@ void vvod(BiiigNum& num, BASE C, string str) {   // 10 ричка
     }
 }
 
-void vivod(BiiigNum num, BASE C, string str) { //поточку в простую функцию с изменением С
+void vivod(BiiigNum num, BASE C, string &str) { //поточку в простую функцию с изменением С
     if (C < 2 || C > 36) {
         C = 35;
     }

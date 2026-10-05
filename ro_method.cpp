@@ -1,7 +1,10 @@
 #include "BigNUM.h"
 #include <iostream>
-#include <string>
+#include <chrono>
+#include <iomanip>
+
 using namespace std;
+using namespace std::chrono;
 
 
 BiiigNum make_num_dec(const string& s) {// простое число в большое
@@ -9,6 +12,8 @@ BiiigNum make_num_dec(const string& s) {// простое число в боль
     vvod(num, 10, s);  
     return num;
 }
+BiiigNum ZERO = make_num_dec("0");
+BiiigNum ONE = make_num_dec("1");
 
 BiiigNum abs_diff( BiiigNum& a,  BiiigNum& b) { //разность по модулю тк нас не интересует знак
     if (a > b) {
@@ -18,19 +23,24 @@ BiiigNum abs_diff( BiiigNum& a,  BiiigNum& b) { //разность по моду
     }
 }
 
-bool check_primes(const BiiigNum& n) {//простое ли взял пока базовую проверку
+BiiigNum check_primes( BiiigNum& n) {//простое ли взял пока базовую проверку
     int primes[] = {2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47};
-    BiiigNum zero = make_num_dec("0");
     
     for (int p : primes) {
         BiiigNum divisor = make_num_dec(to_string(p));
         BiiigNum rem = n % divisor;
-        if (rem == zero) {
-            return false;
+        if (rem == ZERO) {
+            return divisor;
         }
     }
-    return true; // базовых делителей не найдено
+    return ONE; // базовых делителей не найдено
 }
+struct RunResult {
+    bool success;
+    double time_ms;
+    int iterations;
+    BiiigNum divisor;
+};
 
 BiiigNum gcd(BiiigNum a, BiiigNum b) {// алгоритм евклида с сайта URL:https://labex.io/ru/tutorials/cpp-how-to-implement-efficient-gcd-451087
     while (b != 0) {
@@ -41,6 +51,49 @@ BiiigNum gcd(BiiigNum a, BiiigNum b) {// алгоритм евклида с са
     return a;
 }
 
+BiiigNum f_poly(BiiigNum x, int degree, BiiigNum c, BiiigNum n){
+    BiiigNum res = x;
+    for (int i = 1; i < degree; ++i) {
+        res = res * x;
+    }
+    return (res + c) % n;
+}
+
+RunResult pollard_rho(const BiiigNum& n, int degree, int c_val) {
+    BiiigNum x = make_num_dec("2");
+    BiiigNum y = make_num_dec("2");
+    BiiigNum d = ONE;
+    BiiigNum c = make_num_dec(to_string(c_val));
+
+    
+    int max_iter = 300000; // Защита от зависания
+
+    auto start = chrono::high_resolution_clock::now();
+
+    for (int iterations = 0; d == ONE && iterations < max_iter; iterations++) {
+        x = f_poly(x, degree, c, n);          
+        y = f_poly(y, degree, c, n);          
+        y = f_poly(y, degree, c, n);          
+
+        BiiigNum diff = abs_diff(x, y);
+        d = gcd(diff, n);
+        
+    }
+
+    auto end = high_resolution_clock::now();
+    double time_ms = duration<double, milli>(end - start).count();
+
+    RunResult res;
+    res.time_ms = time_ms;
+
+    if (!(d == ONE) && !(d == n)) {
+        res.success = true;
+        res.divisor = d;
+    } else {
+        res.success = false;
+    }
+    return res;
+}
 
 
 int main(){
@@ -49,5 +102,38 @@ int main(){
     //протестировать в базе на значении x^2 + 1.
     // написать скрипт на питоне который будет читать функцию с аргументами из файла и отправлять методу и ждать когда будет доступ к значениям чтобы сохранить их и переносить значения из выхода в эксель
     // сравнить выход скрипта и выход ручками, возможно подправить.
-    cout << "дата, функция, число, делитель который нашли";
+    string num_str;
+    int degree, c_val;
+    
+    // Читаем параметры из stdin (их передаст Python)
+    if (!(cin >> num_str >> degree >> c_val)) {
+        return 1;
+    }
+    string s;
+    BiiigNum n = make_num_dec(num_str);
+
+
+    BiiigNum small_div = check_primes(n);
+    if (!(small_div == ONE)) {
+        cout << num_str << "," << degree << "," << c_val << ",0,";
+        vivod(small_div, 10, s);
+        cout << ",0.00,SMALL_PRIME" << endl;
+        return 0;
+    }
+
+    for (int i = 1; i <= 1; i++) {
+        RunResult res = pollard_rho(n, degree, c_val);
+        
+        // Формат вывода: Число,Степень,c,Попытка,Делитель,Время,Статус
+        cout << num_str << "," << degree << "," << c_val << "," << i << ",";
+        
+        if (res.success) {
+            vivod(res.divisor, 10, s);
+            cout << "," << fixed << setprecision(2) << res.time_ms << ",SUCCESS" << endl;
+        } else {
+            cout << "-," << fixed << setprecision(2) << res.time_ms << ",FAIL" << endl;
+        }
+    }
+
+    // cout << "дата, функция, число, делитель который нашли";
 }

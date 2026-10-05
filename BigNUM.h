@@ -3,9 +3,10 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <cstdint>
 
-using BASE = unsigned int;
-using DBASE = unsigned long;
+using BASE = std::uint32_t;
+using DBASE = std::uint64_t;
 
 #define BASE_SIZE (sizeof(BASE) * 8)
 #define BASE_MAX ((BASE)(-1))
@@ -47,7 +48,7 @@ public:
     BiiigNum operator%( BiiigNum&);
     BiiigNum& operator%=( BiiigNum&);
 
-    friend void vivod(BiiigNum, BASE, std::string);
+    friend void vivod(BiiigNum, BASE, std::string&);
     friend void vvod(BiiigNum&, BASE, std::string);
 
 };
