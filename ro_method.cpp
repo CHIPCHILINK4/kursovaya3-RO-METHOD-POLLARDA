@@ -59,25 +59,28 @@ BiiigNum f_poly(BiiigNum x, int degree, BiiigNum c, BiiigNum n){
     return (res + c) % n;
 }
 
-RunResult pollard_rho(const BiiigNum& n, int degree, int c_val) {
+RunResult pollard_rho(const BiiigNum& n, int degree, BiiigNum c_val) {
     BiiigNum x = make_num_dec("2");
     BiiigNum y = make_num_dec("2");
     BiiigNum d = ONE;
-    BiiigNum c = make_num_dec(to_string(c_val));
+    // BiiigNum c = make_num_dec(to_string(c_val));
 
     
-    int max_iter = 300000; // Защита от зависания
+    int max_iter = 3000000; // Защита от зависания
 
     auto start = chrono::high_resolution_clock::now();
 
-    for (int iterations = 0; d == ONE && iterations < max_iter; iterations++) {
-        x = f_poly(x, degree, c, n);          
-        y = f_poly(y, degree, c, n);          
-        y = f_poly(y, degree, c, n);          
+    for (size_t iterations = 0; d == ONE && iterations < max_iter; iterations++) {
+        x = f_poly(x, degree, c_val, n);          
+        y = f_poly(y, degree, c_val, n);          
+        y = f_poly(y, degree, c_val, n);          
 
         BiiigNum diff = abs_diff(x, y);
         d = gcd(diff, n);
-        
+        // cout << "Iteration: " << iterations + 1 << ", x: " << x << ", y: " << y << ", |x - y|: " << diff << ", gcd(|x - y|, n): " << d << endl;
+        // if (iterations % 1000 == 0) {
+            // cout << "Iteration: " << iterations + 1 << ", x: " << x << ", y: " << y << ", |x - y|: " << diff << ", gcd(|x - y|, n): " << d << endl;
+        // }
     }
 
     auto end = high_resolution_clock::now();
@@ -97,31 +100,35 @@ RunResult pollard_rho(const BiiigNum& n, int degree, int c_val) {
 
 
 int main(){
+    setlocale(LC_ALL, "Russian");
     // получим число функцию ее надо будет сплитануть после чего взять поэлементно, наверное запихнуть в вектор. потом запустить аогоритм 10 раз , каждый раз выдавать время и делитель если не получилось вмето делителя '-'
     // to do 
     //протестировать в базе на значении x^2 + 1.
     // написать скрипт на питоне который будет читать функцию с аргументами из файла и отправлять методу и ждать когда будет доступ к значениям чтобы сохранить их и переносить значения из выхода в эксель
     // сравнить выход скрипта и выход ручками, возможно подправить.
-    string num_str;
-    int degree, c_val;
+    string num_str,c_s_val;
+    int degree;
     
     // Читаем параметры из stdin (их передаст Python)
-    if (!(cin >> num_str >> degree >> c_val)) {
+    if (!(cin >> num_str >> degree >> c_s_val)) {
         return 1;
     }
     string s;
+    cout<< "переводим его в большое число\n";
     BiiigNum n = make_num_dec(num_str);
+    BiiigNum c_val = make_num_dec(c_s_val);
 
 
-    BiiigNum small_div = check_primes(n);
-    if (!(small_div == ONE)) {
-        cout << num_str << "," << degree << "," << c_val << ",0,";
-        vivod(small_div, 10, s);
-        cout << ",0.00,SMALL_PRIME" << endl;
-        return 0;
-    }
+    // BiiigNum small_div = check_primes(n);
+    // if (!(small_div == ONE)) {
+        // cout << num_str << "," << degree << "," << c_val << ",0,";
+        // vivod(small_div, 10, s);
+        // cout << ",0.00,SMALL_PRIME" << endl;
+        // return 0;
+    // }
 
     for (int i = 1; i <= 1; i++) {
+        cout << "Запуск алгоритма с параметрами: число = " << num_str << ", степень = " << degree << ", c = " << c_val << ", попытка = " << i << endl;
         RunResult res = pollard_rho(n, degree, c_val);
         
         // Формат вывода: Число,Степень,c,Попытка,Делитель,Время,Статус
