@@ -78,9 +78,9 @@ RunResult pollard_rho(const BiiigNum& n, int degree, BiiigNum c_val) {
         BiiigNum diff = abs_diff(x, y);
         d = gcd(diff, n);
         // cout << "Iteration: " << iterations + 1 << ", x: " << x << ", y: " << y << ", |x - y|: " << diff << ", gcd(|x - y|, n): " << d << endl;
-        // if (iterations % 1000 == 0) {
-            // cout << "Iteration: " << iterations + 1 << ", x: " << x << ", y: " << y << ", |x - y|: " << diff << ", gcd(|x - y|, n): " << d << endl;
-        // }
+        if (iterations % 1000 == 0) {
+            cout << "I: " << iterations + 1 << ", x: " << x << ", y: " << y << ", |x - y|: " << diff << ", gcd(|x - y|, n): " << d << endl;
+        }
     }
 
     auto end = high_resolution_clock::now();
@@ -110,6 +110,7 @@ int main(){
     int degree;
     
     // Читаем параметры из stdin (их передаст Python)
+    //число степень константа
     if (!(cin >> num_str >> degree >> c_s_val)) {
         return 1;
     }
